@@ -1,6 +1,8 @@
 
 package com.pathgrid.dsa;
 
+import com.pathgrid.model.BFSStep;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,10 +16,12 @@ public class BFS {
     public static class Result {
         private final List<String> path;
         private final List<String> visited;
+        private final List<BFSStep> steps;
 
-        public Result(List<String> path, List<String> visited) {
+        public Result(List<String> path, List<String> visited, List<BFSStep> steps) {
             this.path = path;
             this.visited = visited;
+            this.steps = steps;
         }
 
         public List<String> getPath() {
@@ -26,6 +30,10 @@ public class BFS {
 
         public List<String> getVisited() {
             return visited;
+        }
+
+        public List<BFSStep> getSteps() {
+            return steps;
         }
 
         public int getNodesVisited() {
@@ -41,6 +49,7 @@ public class BFS {
 
         List<String> visited = new ArrayList<>();
         List<String> path = new ArrayList<>();
+        List<BFSStep> steps = new ArrayList<>();
 
         // Check whether both locations exist.
         if (!graph.getLocations().contains(source)
@@ -58,6 +67,13 @@ public class BFS {
         queue.enqueue(source);
         discovered.add(source);
 
+        // Initial snapshot: source enqueued, nothing visited yet.
+        steps.add(new BFSStep(
+                0, null, queue.toList(), new ArrayList<>(visited),
+                "Start at " + source + " (added to the queue)"));
+
+        int stepNumber = 1;
+
         while (!queue.isEmpty()) {
 
             String current = queue.dequeue();
@@ -65,6 +81,9 @@ public class BFS {
 
             // Stop when the destination is reached.
             if (current.equals(destination)) {
+                steps.add(new BFSStep(
+                        stepNumber, current, queue.toList(), new ArrayList<>(visited),
+                        "Visit " + current + " — destination reached"));
                 break;
             }
 
@@ -77,11 +96,16 @@ public class BFS {
                     queue.enqueue(neighbour);
                 }
             }
+
+            steps.add(new BFSStep(
+                    stepNumber, current, queue.toList(), new ArrayList<>(visited),
+                    "Visit " + current + " and enqueue its undiscovered neighbours"));
+            stepNumber++;
         }
 
         // If destination was never discovered, no route exists.
         if (!discovered.contains(destination)) {
-            return new Result(path, visited);
+            return new Result(path, visited, steps);
         }
 
         // Reconstruct the path by following parent references.
@@ -99,6 +123,6 @@ public class BFS {
 
         Collections.reverse(path);
 
-        return new Result(path, visited);
+        return new Result(path, visited, steps);
     }
 }

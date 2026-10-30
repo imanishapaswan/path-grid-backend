@@ -65,6 +65,15 @@ public class CustomQueue<T> {
         return front.data;
     }
 
+    // Return the queue contents from front to rear (for visualization).
+    public java.util.List<T> toList() {
+        java.util.List<T> list = new java.util.ArrayList<>();
+        for (Node<T> node = front; node != null; node = node.next) {
+            list.add(node.data);
+        }
+        return list;
+    }
+
     // Check whether the queue contains any elements.
     public boolean isEmpty() {
         return size == 0;
